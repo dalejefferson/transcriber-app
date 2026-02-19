@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { exec } from "child_process";
-import { readFileSync, unlinkSync, existsSync, readdirSync } from "fs";
+import { existsSync } from "fs";
+import { readFile, unlink, readdir, statfs } from "fs/promises";
 import crypto from "crypto";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
-export const maxDuration = 300;
+export const maxDuration = 600;
 
 interface WhisperSegment {
   text: string;
@@ -43,10 +44,10 @@ function isSupportedUrl(url: string): boolean {
   return isTwitterUrl(url) || isYouTubeUrl(url);
 }
 
-function cleanupFiles(...paths: string[]) {
+async function cleanupFiles(...paths: string[]) {
   for (const p of paths) {
     try {
-      if (existsSync(p)) unlinkSync(p);
+      await unlink(p);
     } catch {
       // best-effort cleanup
     }
@@ -63,6 +64,16 @@ export async function POST(request: Request) {
   const filesToClean: string[] = [wavPath, jsonPath];
 
   try {
+    try {
+      const stats = await statfs('/tmp');
+      const availableMB = (stats.bavail * stats.bsize) / (1024 * 1024);
+      if (availableMB < 500) {
+        return NextResponse.json({ error: 'Insufficient disk space for transcription' }, { status: 507 });
+      }
+    } catch {
+      // Continue if statfs fails
+    }
+
     const body = await request.json();
     const { url } = body;
 
@@ -101,7 +112,7 @@ export async function POST(request: Request) {
     // Find the downloaded file (yt-dlp may name it differently)
     let downloadedFile = rawPath;
     if (!existsSync(rawPath)) {
-      const tmpFiles = readdirSync("/tmp").filter(f => f.startsWith(`transcriber_${id}`));
+      const tmpFiles = (await readdir("/tmp")).filter(f => f.startsWith(`transcriber_${id}`));
       console.log("[transcribe] Files found:", tmpFiles);
       const audioFile = tmpFiles.find(f => /\.(m4a|mp3|webm|opus|wav|mp4|ogg)$/.test(f));
       if (audioFile) {
@@ -140,7 +151,7 @@ export async function POST(request: Request) {
     console.log("[transcribe] Running Whisper (tiny model)...");
     try {
       await execAsync(whisperCmd, {
-        timeout: 900_000,
+        timeout: 540_000,
         shell: "/bin/bash",
         maxBuffer: 50 * 1024 * 1024,
       });
@@ -153,9 +164,9 @@ export async function POST(request: Request) {
       );
     }
 
+    let actualJsonPath = jsonPath;
     if (!existsSync(jsonPath)) {
-      // Whisper names output after the input filename
-      const tmpFiles = readdirSync("/tmp").filter(f => f.startsWith(`transcriber_${id}`) && f.endsWith(".json"));
+      const tmpFiles = (await readdir("/tmp")).filter(f => f.startsWith(`transcriber_${id}`) && f.endsWith(".json"));
       console.log("[transcribe] JSON files found:", tmpFiles);
       if (tmpFiles.length === 0) {
         return NextResponse.json(
@@ -163,9 +174,11 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
+      actualJsonPath = `/tmp/${tmpFiles[0]}`;
+      filesToClean.push(actualJsonPath);
     }
 
-    const raw = readFileSync(jsonPath, "utf-8");
+    const raw = await readFile(actualJsonPath, "utf-8");
     const whisperResult: WhisperOutput = JSON.parse(raw);
 
     const transcript = whisperResult.text.trim();
@@ -176,12 +189,12 @@ export async function POST(request: Request) {
     }));
 
     // Cleanup temp files
-    cleanupFiles(...filesToClean);
+    await cleanupFiles(...filesToClean);
 
     console.log("[transcribe] Success! Segments:", segments.length);
     return NextResponse.json({ transcript, segments });
   } catch (err: unknown) {
-    cleanupFiles(...filesToClean);
+    await cleanupFiles(...filesToClean);
 
     const message =
       err instanceof Error ? err.message : "An unknown error occurred";

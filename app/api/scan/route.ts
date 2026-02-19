@@ -34,6 +34,14 @@ function getSubnetBase(ip: string): string {
   return `${parts[0]}.${parts[1]}.${parts[2]}`;
 }
 
+function isValidIPv4(ip: string): boolean {
+  const parts = ip.split('.');
+  return parts.length === 4 && parts.every(p => {
+    const num = parseInt(p, 10);
+    return !isNaN(num) && num >= 0 && num <= 255 && String(num) === p;
+  });
+}
+
 function checkPort(ip: string, port: number): Promise<boolean> {
   return new Promise((resolve) => {
     const socket = new net.Socket();
@@ -43,10 +51,12 @@ function checkPort(ip: string, port: number): Promise<boolean> {
       resolve(true);
     });
     socket.once("timeout", () => {
+      console.warn(`TCP timeout: ${ip}:${port}`);
       socket.destroy();
       resolve(false);
     });
-    socket.once("error", () => {
+    socket.once("error", (err) => {
+      console.warn(`TCP error: ${ip}:${port} - ${err.message}`);
       socket.destroy();
       resolve(false);
     });
@@ -71,9 +81,16 @@ async function probeHttp(
     const serverHeader = res.headers.get("server") || null;
     let title: string | null = null;
     try {
-      const text = await res.text();
-      const match = text.match(/<title[^>]*>([^<]+)<\/title>/i);
-      if (match) title = match[1].trim();
+      const text = await Promise.race([
+        res.text(),
+        new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Body timeout')), 1000))
+      ]);
+      if (text.length > 100000) {
+        // Skip title extraction for huge responses
+      } else {
+        const match = text.match(/<title[^>]*>([^<]+)<\/title>/i);
+        if (match) title = match[1].trim();
+      }
     } catch {
       // ignore body read errors
     }
@@ -100,7 +117,7 @@ export async function POST() {
   const startTime = performance.now();
 
   const localIp = getLocalIp();
-  if (!localIp) {
+  if (!localIp || !isValidIPv4(localIp)) {
     return NextResponse.json(
       { error: "Could not determine local IP address" },
       { status: 500 }
