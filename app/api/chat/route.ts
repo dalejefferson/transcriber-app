@@ -31,7 +31,9 @@ function streamOpenAI(apiKey: string, transcript: string, messages: { role: stri
         }
         controller.close();
       } catch (err) {
-        controller.error(err);
+        const message = err instanceof Error ? err.message : 'An error occurred';
+        controller.enqueue(new TextEncoder().encode(`\n\n[Error: ${message}]`));
+        controller.close();
       }
     },
   });
@@ -58,7 +60,9 @@ function streamClaude(apiKey: string, transcript: string, messages: { role: stri
         }
         controller.close();
       } catch (err) {
-        controller.error(err);
+        const message = err instanceof Error ? err.message : 'An error occurred';
+        controller.enqueue(new TextEncoder().encode(`\n\n[Error: ${message}]`));
+        controller.close();
       }
     },
   });
@@ -92,7 +96,9 @@ function streamGemini(apiKey: string, transcript: string, messages: { role: stri
         }
         controller.close();
       } catch (err) {
-        controller.error(err);
+        const message = err instanceof Error ? err.message : 'An error occurred';
+        controller.enqueue(new TextEncoder().encode(`\n\n[Error: ${message}]`));
+        controller.close();
       }
     },
   });

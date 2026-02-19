@@ -29,6 +29,20 @@ function isTwitterUrl(url: string): boolean {
   }
 }
 
+function isYouTubeUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace("www.", "").replace("m.", "");
+    return host === "youtube.com" || host === "youtu.be";
+  } catch {
+    return false;
+  }
+}
+
+function isSupportedUrl(url: string): boolean {
+  return isTwitterUrl(url) || isYouTubeUrl(url);
+}
+
 function cleanupFiles(...paths: string[]) {
   for (const p of paths) {
     try {
@@ -59,9 +73,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!isTwitterUrl(url)) {
+    if (!isSupportedUrl(url)) {
       return NextResponse.json(
-        { error: "URL must be a Twitter/X URL (twitter.com or x.com)" },
+        { error: "Please provide a valid Twitter/X or YouTube URL" },
         { status: 400 }
       );
     }
@@ -70,7 +84,8 @@ export async function POST(request: Request) {
     // Download audio as m4a first (much smaller than wav)
     const rawPath = `${basePath}.m4a`;
     filesToClean.push(rawPath);
-    const ytdlpCmd = `/opt/homebrew/bin/yt-dlp --cookies-from-browser chrome -f "bestaudio[ext=m4a]/bestaudio/best" -o "${rawPath}" "${url}"`;
+    const cookieFlag = isTwitterUrl(url) ? "--cookies-from-browser chrome " : "";
+    const ytdlpCmd = `/opt/homebrew/bin/yt-dlp ${cookieFlag}-f "bestaudio[ext=m4a]/bestaudio/best" -o "${rawPath}" "${url}"`;
     console.log("[transcribe] Downloading audio...");
     try {
       await execAsync(ytdlpCmd, { timeout: 300_000, maxBuffer: 50 * 1024 * 1024 });
@@ -78,7 +93,7 @@ export async function POST(request: Request) {
       const msg = dlErr instanceof Error ? dlErr.message : String(dlErr);
       console.error("[transcribe] yt-dlp error:", msg);
       return NextResponse.json(
-        { error: "Failed to download video audio. Make sure the URL is a valid public X/Twitter video.", details: msg },
+        { error: "Failed to download video audio. Make sure the URL is a valid public Twitter/X or YouTube video.", details: msg },
         { status: 500 }
       );
     }

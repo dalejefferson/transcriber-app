@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Transcriber - X Video to Text + AI Chat",
-  description: "Paste any Twitter/X video URL to get an instant transcript with AI-powered insights, summaries, and Q&A.",
+  title: "Echotext - Drop a link. Get the words.",
+  description: "Transcribe any YouTube or X/Twitter video instantly with AI-powered chat and insights.",
 };
 
 export default function RootLayout({
@@ -18,8 +18,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans antialiased bg-slate-950 text-white min-h-screen`}>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            var theme = localStorage.getItem('transcriber_theme') || 'dark';
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+          })();
+        `}} />
+      </head>
+      <body className={`${inter.variable} font-sans antialiased bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white min-h-screen`}>
         {children}
       </body>
     </html>

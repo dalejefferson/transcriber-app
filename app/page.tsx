@@ -24,7 +24,7 @@ function formatTime(seconds: number): string {
 function DocumentIcon() {
   return (
     <svg
-      className="h-5 w-5 text-cyan-400"
+      className="h-5 w-5 text-cyan-600 dark:text-cyan-400"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -42,7 +42,7 @@ function DocumentIcon() {
 function SparklesIcon() {
   return (
     <svg
-      className="h-5 w-5 text-cyan-400"
+      className="h-5 w-5 text-cyan-600 dark:text-cyan-400"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -159,6 +159,58 @@ function EyeSlashIcon() {
   );
 }
 
+function SunIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+      />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
+      />
+    </svg>
+  );
+}
+
+function YouTubeIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+    </svg>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
 function Spinner({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg
@@ -183,27 +235,77 @@ function Spinner({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+// --- URL Helpers ---
+
+function isYouTubeUrl(url: string): boolean {
+  return /^https?:\/\/(www\.)?(youtube\.com\/(watch|shorts)|youtu\.be\/|m\.youtube\.com\/watch)/i.test(url);
+}
+
+function isTwitterUrl(url: string): boolean {
+  return /^https?:\/\/(www\.)?(twitter\.com|x\.com)\//i.test(url);
+}
+
+function detectPlatform(url: string): "youtube" | "twitter" | null {
+  if (isYouTubeUrl(url)) return "youtube";
+  if (isTwitterUrl(url)) return "twitter";
+  return null;
+}
+
+// --- Chevron Icon for Accordion ---
+
+function ChevronDownIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
+// --- Types for multi-URL results ---
+
+interface TranscriptionResult {
+  id: string;
+  url: string;
+  transcript: string;
+  segments: Segment[];
+  messages: ChatMessage[];
+  chatInput: string;
+  isStreaming: boolean;
+  copied: boolean;
+  expanded: boolean;
+}
+
 // --- Main Page Component ---
 
 export default function Home() {
-  const [url, setUrl] = useState("");
-  const [transcript, setTranscript] = useState("");
-  const [segments, setSegments] = useState<Segment[]>([]);
+  const [urls, setUrls] = useState<string[]>([""]);
+  const [results, setResults] = useState<TranscriptionResult[]>([]);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcribeProgress, setTranscribeProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [showContent, setShowContent] = useState(false);
   const [provider, setProvider] = useState<Provider>("openai");
   const [apiKey, setApiKey] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const transcriptRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
 
   // Load settings from localStorage
@@ -213,6 +315,22 @@ export default function Home() {
     if (savedProvider) setProvider(savedProvider);
     if (savedKey) setApiKey(savedKey);
   }, []);
+
+  // Load theme from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("transcriber_theme") as 'light' | 'dark' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    }
+  }, []);
+
+  function toggleTheme() {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('transcriber_theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  }
 
   // Close settings on click outside
   useEffect(() => {
@@ -235,70 +353,139 @@ export default function Home() {
     }, 800);
   }
 
-  // Auto-scroll chat messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // --- Multi-URL input handlers ---
 
-  // Fade in content when transcript loads
-  useEffect(() => {
-    if (transcript) {
-      const timer = setTimeout(() => setShowContent(true), 50);
-      return () => clearTimeout(timer);
-    }
-    setShowContent(false);
-  }, [transcript]);
-
-  async function handleTranscribe() {
-    if (!url.trim()) return;
-    setIsTranscribing(true);
-    setError("");
-    setTranscript("");
-    setSegments([]);
-    setMessages([]);
-
-    try {
-      const res = await fetch("/api/transcribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim() }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Transcription failed. Please try again.");
-        return;
-      }
-
-      setTranscript(data.transcript);
-      setSegments(data.segments);
-    } catch {
-      setError("Network error. Please check your connection and try again.");
-    } finally {
-      setIsTranscribing(false);
-    }
+  function handleUrlChange(index: number, value: string) {
+    setUrls((prev) => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
   }
 
-  async function handleChat(userMessage: string) {
-    if (!userMessage.trim() || isStreaming) return;
+  function addUrlField() {
+    setUrls((prev) => [...prev, ""]);
+  }
+
+  function removeUrlField(index: number) {
+    if (urls.length <= 1) return;
+    setUrls((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  // --- Queued transcription ---
+
+  async function handleTranscribe() {
+    const validUrls = urls
+      .map((u) => u.trim())
+      .filter((u) => u && (isYouTubeUrl(u) || isTwitterUrl(u)));
+
+    if (validUrls.length === 0) {
+      setError("Please enter at least one valid YouTube or X/Twitter URL.");
+      return;
+    }
+
+    setIsTranscribing(true);
+    setError("");
+    setTranscribeProgress({ current: 0, total: validUrls.length });
+
+    // Collapse existing results
+    setResults((prev) => prev.map((r) => ({ ...r, expanded: false })));
+
+    for (let i = 0; i < validUrls.length; i++) {
+      setTranscribeProgress({ current: i + 1, total: validUrls.length });
+
+      try {
+        const res = await fetch("/api/transcribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: validUrls[i] }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          // Add error result but continue with remaining URLs
+          setResults((prev) => [
+            ...prev.map((r) => ({ ...r, expanded: false })),
+            {
+              id: crypto.randomUUID(),
+              url: validUrls[i],
+              transcript: "",
+              segments: [],
+              messages: [{ role: "assistant" as const, content: `Transcription failed: ${data.error || "Unknown error"}` }],
+              chatInput: "",
+              isStreaming: false,
+              copied: false,
+              expanded: true,
+            },
+          ]);
+          continue;
+        }
+
+        setResults((prev) => [
+          ...prev.map((r) => ({ ...r, expanded: false })),
+          {
+            id: crypto.randomUUID(),
+            url: validUrls[i],
+            transcript: data.transcript,
+            segments: data.segments,
+            messages: [],
+            chatInput: "",
+            isStreaming: false,
+            copied: false,
+            expanded: true,
+          },
+        ]);
+      } catch {
+        setResults((prev) => [
+          ...prev.map((r) => ({ ...r, expanded: false })),
+          {
+            id: crypto.randomUUID(),
+            url: validUrls[i],
+            transcript: "",
+            segments: [],
+            messages: [{ role: "assistant" as const, content: "Network error. Please check your connection." }],
+            chatInput: "",
+            isStreaming: false,
+            copied: false,
+            expanded: true,
+          },
+        ]);
+      }
+    }
+
+    setIsTranscribing(false);
+    // Clear URL inputs after successful queue
+    setUrls([""]);
+  }
+
+  // --- Per-result chat handler ---
+
+  async function handleChat(resultId: string, userMessage: string) {
+    if (!userMessage.trim()) return;
+
+    const resultIndex = results.findIndex((r) => r.id === resultId);
+    if (resultIndex === -1) return;
+    const result = results[resultIndex];
+    if (result.isStreaming) return;
 
     const newUserMsg: ChatMessage = { role: "user", content: userMessage };
-    const updatedMessages = [...messages, newUserMsg];
-    setMessages(updatedMessages);
-    setChatInput("");
-    setIsStreaming(true);
+    const updatedMessages = [...result.messages, newUserMsg];
+
+    // Update messages and clear input
+    setResults((prev) => {
+      const updated = [...prev];
+      updated[resultIndex] = { ...updated[resultIndex], messages: updatedMessages, chatInput: "", isStreaming: true };
+      return updated;
+    });
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: updatedMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          transcript,
+          messages: updatedMessages.map((m) => ({ role: m.role, content: m.content })),
+          transcript: result.transcript,
           provider,
           apiKey,
         }),
@@ -306,33 +493,44 @@ export default function Home() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content:
-              errData.error || "Sorry, something went wrong. Please try again.",
-          },
-        ]);
-        setIsStreaming(false);
+        setResults((prev) => {
+          const updated = [...prev];
+          updated[resultIndex] = {
+            ...updated[resultIndex],
+            messages: [...updatedMessages, { role: "assistant", content: errData.error || "Sorry, something went wrong." }],
+            isStreaming: false,
+          };
+          return updated;
+        });
         return;
       }
 
       const reader = res.body?.getReader();
       if (!reader) {
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: "Failed to read response stream." },
-        ]);
-        setIsStreaming(false);
+        setResults((prev) => {
+          const updated = [...prev];
+          updated[resultIndex] = {
+            ...updated[resultIndex],
+            messages: [...updatedMessages, { role: "assistant", content: "Failed to read response stream." }],
+            isStreaming: false,
+          };
+          return updated;
+        });
         return;
       }
 
       const decoder = new TextDecoder();
       let assistantContent = "";
 
-      // Add placeholder assistant message
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+      // Add placeholder
+      setResults((prev) => {
+        const updated = [...prev];
+        updated[resultIndex] = {
+          ...updated[resultIndex],
+          messages: [...updatedMessages, { role: "assistant", content: "" }],
+        };
+        return updated;
+      });
 
       while (true) {
         const { done, value } = await reader.read();
@@ -341,169 +539,253 @@ export default function Home() {
         const chunk = decoder.decode(value, { stream: true });
         assistantContent += chunk;
 
-        setMessages((prev) => {
+        setResults((prev) => {
           const updated = [...prev];
-          updated[updated.length - 1] = {
-            role: "assistant",
-            content: assistantContent,
-          };
+          const msgs = [...updated[resultIndex].messages];
+          msgs[msgs.length - 1] = { role: "assistant", content: assistantContent };
+          updated[resultIndex] = { ...updated[resultIndex], messages: msgs };
           return updated;
         });
       }
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Network error. Please check your connection.",
-        },
-      ]);
+      setResults((prev) => {
+        const updated = [...prev];
+        updated[resultIndex] = {
+          ...updated[resultIndex],
+          messages: [...updated[resultIndex].messages, { role: "assistant", content: "Network error. Please check your connection." }],
+        };
+        return updated;
+      });
     } finally {
-      setIsStreaming(false);
+      setResults((prev) => {
+        const updated = [...prev];
+        updated[resultIndex] = { ...updated[resultIndex], isStreaming: false };
+        return updated;
+      });
     }
   }
 
-  function handlePreset(preset: string) {
+  function handlePreset(resultId: string, preset: string) {
     const prompts: Record<string, string> = {
-      Summarize:
-        "Give me a concise summary of this transcript in bullet points.",
-      "Key Takeaways":
-        "What are the top 5 key takeaways from this transcript?",
+      Summarize: "Give me a concise summary of this transcript in bullet points.",
+      "Key Takeaways": "What are the top 5 key takeaways from this transcript?",
       ELI5: "Explain what this video is about like I'm 5 years old.",
-      "Action Items":
-        "What are the actionable items or advice from this transcript?",
+      "Action Items": "What are the actionable items or advice from this transcript?",
+      "Like I'm 12": "Break down what this video is about in the simplest way possible, like you're explaining it to a 12-year-old. Use everyday language, no jargon, and fun analogies.",
     };
     const prompt = prompts[preset];
-    if (prompt) handleChat(prompt);
+    if (prompt) handleChat(resultId, prompt);
   }
 
-  function handleCopy() {
-    const fullText = segments
-      .map((seg) => `[${formatTime(seg.start)}] ${seg.text}`)
-      .join("\n");
-    navigator.clipboard.writeText(fullText || transcript).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  function handleCopy(resultId: string) {
+    const result = results.find((r) => r.id === resultId);
+    if (!result) return;
+    const fullText = result.segments.length > 0
+      ? result.segments.map((seg) => `[${formatTime(seg.start)}] ${seg.text}`).join("\n")
+      : result.transcript;
+    navigator.clipboard.writeText(fullText).then(() => {
+      setResults((prev) =>
+        prev.map((r) => (r.id === resultId ? { ...r, copied: true } : r))
+      );
+      setTimeout(() => {
+        setResults((prev) =>
+          prev.map((r) => (r.id === resultId ? { ...r, copied: false } : r))
+        );
+      }, 2000);
     });
   }
 
-  const presets = ["Summarize", "Key Takeaways", "ELI5", "Action Items"];
+  function toggleExpanded(resultId: string) {
+    setResults((prev) =>
+      prev.map((r) => (r.id === resultId ? { ...r, expanded: !r.expanded } : r))
+    );
+  }
+
+  function updateResultChatInput(resultId: string, value: string) {
+    setResults((prev) =>
+      prev.map((r) => (r.id === resultId ? { ...r, chatInput: value } : r))
+    );
+  }
+
+  const presets = ["Summarize", "Key Takeaways", "ELI5", "Action Items", "Like I'm 12"];
+  const hasValidUrls = urls.some((u) => {
+    const trimmed = u.trim();
+    return trimmed && (isYouTubeUrl(trimmed) || isTwitterUrl(trimmed));
+  });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
-        <div className="relative py-12 text-center">
-          {/* Settings Gear Button */}
-          <div className="absolute right-0 top-12" ref={settingsRef}>
+        <div className="py-12 text-center">
+          {/* Theme Toggle & Settings */}
+          <div className="mx-auto mb-6 flex items-center justify-center gap-2">
             <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-slate-400 transition-all hover:border-cyan-600 hover:text-cyan-400"
+              onClick={toggleTheme}
+              className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-slate-600 dark:text-slate-400 transition-all hover:text-cyan-500 dark:hover:text-cyan-400"
             >
-              <GearIcon />
-              <span className={`h-2 w-2 rounded-full ${PROVIDER_INFO[provider].color}`} />
-              <span className="text-xs">{PROVIDER_INFO[provider].label}</span>
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
             </button>
+            <div ref={settingsRef} className="relative">
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-500 dark:text-slate-400 transition-all hover:border-cyan-600 hover:text-cyan-600 dark:hover:text-cyan-400"
+              >
+                <GearIcon />
+                <span className={`h-2 w-2 rounded-full ${PROVIDER_INFO[provider].color}`} />
+                <span className="text-xs">{PROVIDER_INFO[provider].label}</span>
+              </button>
 
-            {/* Settings Dropdown */}
-            {showSettings && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-xl shadow-black/40">
-                <h3 className="mb-4 text-sm font-semibold text-white">AI Provider Settings</h3>
+              {/* Settings Dropdown */}
+              {showSettings && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-xl shadow-slate-200/60 dark:shadow-black/40">
+                  <h3 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">AI Provider Settings</h3>
 
-                {/* Provider Selection */}
-                <div className="mb-4 flex gap-2">
-                  {(Object.keys(PROVIDER_INFO) as Provider[]).map((p) => (
+                  {/* Provider Selection */}
+                  <div className="mb-4 flex gap-2">
+                    {(Object.keys(PROVIDER_INFO) as Provider[]).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setProvider(p)}
+                        className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                          provider === p
+                            ? "border border-cyan-500 bg-cyan-50 dark:bg-cyan-600/20 text-cyan-700 dark:text-cyan-300"
+                            : "border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-300"
+                        }`}
+                      >
+                        <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${PROVIDER_INFO[p].color}`} />
+                        {PROVIDER_INFO[p].label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* API Key Input */}
+                  <label className="mb-1.5 block text-xs text-slate-500 dark:text-slate-400">
+                    {PROVIDER_INFO[provider].label} API Key
+                  </label>
+                  <div className="relative mb-4">
+                    <input
+                      type={showKey ? "text" : "password"}
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder={`Enter your ${PROVIDER_INFO[provider].label} API key...`}
+                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-3 py-2 pr-10 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/40"
+                    />
                     <button
-                      key={p}
-                      onClick={() => setProvider(p)}
-                      className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                        provider === p
-                          ? "border border-cyan-500 bg-cyan-600/20 text-cyan-300"
-                          : "border border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-300"
-                      }`}
+                      type="button"
+                      onClick={() => setShowKey(!showKey)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                     >
-                      <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${PROVIDER_INFO[p].color}`} />
-                      {PROVIDER_INFO[p].label}
+                      {showKey ? <EyeSlashIcon /> : <EyeIcon />}
                     </button>
-                  ))}
-                </div>
+                  </div>
 
-                {/* API Key Input */}
-                <label className="mb-1.5 block text-xs text-slate-400">
-                  {PROVIDER_INFO[provider].label} API Key
-                </label>
-                <div className="relative mb-4">
-                  <input
-                    type={showKey ? "text" : "password"}
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder={`Enter your ${PROVIDER_INFO[provider].label} API key...`}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 pr-10 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/40"
-                  />
+                  {/* Save Button */}
                   <button
-                    type="button"
-                    onClick={() => setShowKey(!showKey)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                    onClick={saveSettings}
+                    className={`w-full rounded-lg py-2 text-sm font-semibold transition-all ${
+                      saved
+                        ? "bg-emerald-600 text-white"
+                        : "bg-cyan-600 text-white hover:bg-cyan-500"
+                    }`}
                   >
-                    {showKey ? <EyeSlashIcon /> : <EyeIcon />}
+                    {saved ? "Saved!" : "Save"}
                   </button>
                 </div>
-
-                {/* Save Button */}
-                <button
-                  onClick={saveSettings}
-                  className={`w-full rounded-lg py-2 text-sm font-semibold transition-all ${
-                    saved
-                      ? "bg-emerald-600 text-white"
-                      : "bg-cyan-600 text-white hover:bg-cyan-500"
-                  }`}
-                >
-                  {saved ? "Saved!" : "Save"}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight text-white">
-            Transcriber
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Echotext
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-lg text-slate-400">
-            Paste any X/Twitter video URL to get an instant transcript +
-            AI-powered insights
+          <p className="mx-auto mt-3 max-w-2xl select-none text-lg text-slate-500 dark:text-slate-400">
+            Drop a link. Get the words.
           </p>
 
-          {/* URL Input Row */}
-          <div className="mx-auto mt-8 flex max-w-2xl gap-3">
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !isTranscribing) handleTranscribe();
-              }}
-              placeholder="https://x.com/user/status/..."
-              className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-5 py-3 text-white placeholder-slate-500 outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/40"
-              disabled={isTranscribing}
-            />
-            <button
-              onClick={handleTranscribe}
-              disabled={isTranscribing || !url.trim()}
-              className="flex items-center gap-2 rounded-xl bg-cyan-600 px-8 py-3 font-semibold text-white transition-colors hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isTranscribing ? (
-                <>
-                  <Spinner className="h-4 w-4" />
-                  <span>Transcribing...</span>
-                </>
-              ) : (
-                "Transcribe"
-              )}
-            </button>
+          {/* Supported Platform Badges */}
+          <div className="mx-auto mt-4 flex items-center justify-center gap-3">
+            <span className="flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100/60 dark:bg-slate-800/60 px-3 py-1 text-xs text-red-500 dark:text-red-400">
+              <YouTubeIcon />
+              YouTube
+            </span>
+            <span className="flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100/60 dark:bg-slate-800/60 px-3 py-1 text-xs text-slate-600 dark:text-slate-300">
+              <XIcon />
+              X / Twitter
+            </span>
+          </div>
+
+          {/* Multi-URL Input Section */}
+          <div className="mx-auto mt-8 max-w-2xl space-y-3">
+            {urls.map((urlValue, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={urlValue}
+                    onChange={(e) => handleUrlChange(index, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !isTranscribing) handleTranscribe();
+                    }}
+                    placeholder={`Paste a YouTube or X/Twitter video URL...`}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-5 py-3 pr-10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/40"
+                    disabled={isTranscribing}
+                  />
+                  {/* Platform detection badge inside input */}
+                  {urlValue.trim() && detectPlatform(urlValue.trim()) && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {detectPlatform(urlValue.trim()) === "youtube" ? (
+                        <span className="text-red-500 dark:text-red-400"><YouTubeIcon /></span>
+                      ) : (
+                        <span className="text-slate-500 dark:text-slate-400"><XIcon /></span>
+                      )}
+                    </span>
+                  )}
+                </div>
+                {urls.length > 1 && (
+                  <button
+                    onClick={() => removeUrlField(index)}
+                    disabled={isTranscribing}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 transition-all hover:border-red-300 hover:text-red-500 dark:hover:border-red-500/50 dark:hover:text-red-400 disabled:opacity-50"
+                  >
+                    <TrashIcon />
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {/* Add URL + Transcribe Row */}
+            <div className="flex gap-3">
+              <button
+                onClick={addUrlField}
+                disabled={isTranscribing}
+                className="flex items-center gap-2 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800/50 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 transition-all hover:border-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400 disabled:opacity-50"
+              >
+                <PlusIcon />
+                Add URL
+              </button>
+              <button
+                onClick={handleTranscribe}
+                disabled={isTranscribing || !hasValidUrls}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-cyan-600 px-8 py-3 font-semibold text-white transition-colors hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isTranscribing ? (
+                  <>
+                    <Spinner className="h-4 w-4" />
+                    <span>
+                      Transcribing {transcribeProgress.current} of {transcribeProgress.total}...
+                    </span>
+                  </>
+                ) : (
+                  `Transcribe${urls.filter((u) => u.trim() && (isYouTubeUrl(u.trim()) || isTwitterUrl(u.trim()))).length > 1 ? ` (${urls.filter((u) => u.trim() && (isYouTubeUrl(u.trim()) || isTwitterUrl(u.trim()))).length})` : ""}`
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Error Message */}
           {error && (
-            <p className="mx-auto mt-4 max-w-2xl text-sm text-red-400">
+            <p className="mx-auto mt-4 max-w-2xl text-sm text-red-600 dark:text-red-400">
               {error}
             </p>
           )}
@@ -511,180 +793,219 @@ export default function Home() {
           {/* Progress Bar */}
           {isTranscribing && (
             <div className="mx-auto mt-6 max-w-2xl">
-              <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+              <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                 <div className="h-full w-full animate-pulse rounded-full bg-gradient-to-r from-cyan-600 via-cyan-400 to-cyan-600" />
               </div>
-              <p className="mt-2 text-sm text-slate-500">
-                Downloading and transcribing audio... This may take a minute.
+              <p className="mt-2 text-sm text-slate-400 dark:text-slate-500">
+                Downloading and transcribing audio ({transcribeProgress.current}/{transcribeProgress.total})... This may take a minute per video.
               </p>
             </div>
           )}
         </div>
 
-        {/* Content Section - Two Column Grid */}
-        {transcript && (
-          <div
-            className={`grid gap-6 pb-12 transition-all duration-500 lg:grid-cols-2 ${
-              showContent
-                ? "translate-y-0 opacity-100"
-                : "translate-y-4 opacity-0"
-            }`}
-          >
-            {/* Left Column - Transcript Panel */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <DocumentIcon />
-                  <h2 className="text-lg font-semibold text-white">
-                    Transcript
-                  </h2>
-                </div>
-                <button
-                  onClick={handleCopy}
-                  className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs text-slate-300 transition-colors hover:border-cyan-600 hover:text-cyan-400"
-                >
-                  {copied ? (
-                    <>
-                      <CheckIcon />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <CopyIcon />
-                      Copy
-                    </>
-                  )}
-                </button>
-              </div>
-
+        {/* Stacked Accordion Results */}
+        {results.length > 0 && (
+          <div className="space-y-4 pb-12">
+            {results.map((result) => (
               <div
-                ref={transcriptRef}
-                className="max-h-[600px] space-y-3 overflow-y-auto pr-2"
+                key={result.id}
+                className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden transition-all animate-fade-in"
               >
-                {segments.length > 0
-                  ? segments.map((seg, i) => (
-                      <div key={i} className="flex gap-3">
-                        <span className="mt-0.5 shrink-0 rounded bg-slate-800 px-2 py-0.5 text-xs text-cyan-400">
-                          {formatTime(seg.start)}
-                        </span>
-                        <p className="text-sm leading-relaxed text-slate-300">
-                          {seg.text}
-                        </p>
-                      </div>
-                    ))
-                  : (
-                    <p className="text-sm leading-relaxed text-slate-300">
-                      {transcript}
-                    </p>
-                  )}
-              </div>
-            </div>
-
-            {/* Right Column - AI Chat Panel */}
-            <div className="flex max-h-[700px] flex-col rounded-2xl border border-slate-800 bg-slate-900">
-              <div className="border-b border-slate-800 p-6 pb-4">
-                <div className="flex items-center gap-2">
-                  <SparklesIcon />
-                  <h2 className="text-lg font-semibold text-white">
-                    AI Assistant
-                  </h2>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium text-white ${PROVIDER_INFO[provider].color}`}>
-                    {PROVIDER_INFO[provider].label}
+                {/* Accordion Header */}
+                <button
+                  onClick={() => toggleExpanded(result.id)}
+                  className="flex w-full items-center gap-3 px-6 py-4 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                >
+                  <span className="shrink-0">
+                    {detectPlatform(result.url) === "youtube" ? (
+                      <span className="text-red-500 dark:text-red-400"><YouTubeIcon /></span>
+                    ) : (
+                      <span className="text-slate-500 dark:text-slate-400"><XIcon /></span>
+                    )}
                   </span>
-                </div>
+                  <span className="flex-1 truncate text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {result.url}
+                  </span>
+                  {!result.transcript && (
+                    <span className="shrink-0 rounded-full bg-red-100 dark:bg-red-500/20 px-2 py-0.5 text-[10px] font-medium text-red-600 dark:text-red-400">
+                      Error
+                    </span>
+                  )}
+                  {result.transcript && (
+                    <span className="shrink-0 rounded-full bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                      Done
+                    </span>
+                  )}
+                  <ChevronDownIcon
+                    className={`shrink-0 text-slate-400 transition-transform duration-200 ${
+                      result.expanded ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
 
-                {/* Preset Buttons */}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {presets.map((preset) => (
-                    <button
-                      key={preset}
-                      onClick={() => handlePreset(preset)}
-                      disabled={isStreaming}
-                      className="rounded-full border border-slate-700 bg-slate-800 px-4 py-1.5 text-sm text-slate-300 transition-all hover:border-cyan-600/40 hover:bg-cyan-600/20 hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {preset}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                {/* Accordion Content */}
+                {result.expanded && (
+                  <div className="border-t border-slate-200 dark:border-slate-800">
+                    <div className="grid gap-6 p-6 lg:grid-cols-2">
+                      {/* Left Column - Transcript Panel */}
+                      <div className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/50 p-5">
+                        <div className="mb-4 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <DocumentIcon />
+                            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+                              Transcript
+                            </h2>
+                          </div>
+                          {result.transcript && (
+                            <button
+                              onClick={() => handleCopy(result.id)}
+                              className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 transition-colors hover:border-cyan-600 hover:text-cyan-600 dark:hover:text-cyan-400"
+                            >
+                              {result.copied ? (
+                                <>
+                                  <CheckIcon />
+                                  Copied
+                                </>
+                              ) : (
+                                <>
+                                  <CopyIcon />
+                                  Copy
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
 
-              {/* Messages Area */}
-              <div className="flex-1 space-y-4 overflow-y-auto p-6">
-                {messages.length === 0 && (
-                  <div className="flex h-full items-center justify-center">
-                    <p className="text-center text-sm text-slate-500">
-                      Ask anything about the transcript or use a preset above to
-                      get started.
-                    </p>
+                        <div className="max-h-[500px] space-y-3 overflow-y-auto pr-2">
+                          {result.segments.length > 0
+                            ? result.segments.map((seg, i) => (
+                                <div key={i} className="flex gap-3">
+                                  <span className="mt-0.5 shrink-0 rounded bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-xs text-cyan-600 dark:text-cyan-400">
+                                    {formatTime(seg.start)}
+                                  </span>
+                                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                                    {seg.text}
+                                  </p>
+                                </div>
+                              ))
+                            : result.transcript ? (
+                              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                                {result.transcript}
+                              </p>
+                            ) : (
+                              <p className="text-sm text-slate-400 dark:text-slate-500 italic">
+                                No transcript available.
+                              </p>
+                            )}
+                        </div>
+                      </div>
+
+                      {/* Right Column - AI Chat Panel */}
+                      <div className="flex max-h-[600px] flex-col rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/50">
+                        <div className="border-b border-slate-200 dark:border-slate-700/50 p-5 pb-3">
+                          <div className="flex items-center gap-2">
+                            <SparklesIcon />
+                            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+                              AI Assistant
+                            </h2>
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium text-white ${PROVIDER_INFO[provider].color}`}>
+                              {PROVIDER_INFO[provider].label}
+                            </span>
+                          </div>
+
+                          {/* Preset Buttons */}
+                          {result.transcript && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {presets.map((preset) => (
+                                <button
+                                  key={preset}
+                                  onClick={() => handlePreset(result.id, preset)}
+                                  disabled={result.isStreaming}
+                                  className="rounded-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-1 text-xs text-slate-600 dark:text-slate-300 transition-all hover:border-cyan-600/40 hover:bg-cyan-50 dark:hover:bg-cyan-600/20 hover:text-cyan-600 dark:hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  {preset}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Messages Area */}
+                        <div className="flex-1 space-y-4 overflow-y-auto p-5">
+                          {result.messages.length === 0 && (
+                            <div className="flex h-full items-center justify-center">
+                              <p className="text-center text-sm text-slate-400 dark:text-slate-500">
+                                Ask anything about the transcript or use a preset above.
+                              </p>
+                            </div>
+                          )}
+
+                          {result.messages.map((msg, i) => (
+                            <div
+                              key={i}
+                              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                            >
+                              <div
+                                className={`max-w-[85%] whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed ${
+                                  msg.role === "user"
+                                    ? "rounded-2xl rounded-br-md bg-cyan-50 dark:bg-cyan-600/20 text-cyan-900 dark:text-cyan-100"
+                                    : "rounded-2xl rounded-bl-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200"
+                                }`}
+                              >
+                                {msg.content}
+                                {msg.role === "assistant" && msg.content === "" && result.isStreaming && (
+                                  <span className="inline-block h-4 w-1 animate-pulse bg-cyan-600 dark:bg-cyan-400" />
+                                )}
+                              </div>
+                            </div>
+                          ))}
+
+                          {result.isStreaming &&
+                            result.messages.length > 0 &&
+                            result.messages[result.messages.length - 1].content !== "" &&
+                            result.messages[result.messages.length - 1].role === "assistant" && (
+                              <div className="flex justify-start">
+                                <span className="inline-block h-1 w-1 animate-pulse rounded-full bg-cyan-600 dark:bg-cyan-400" />
+                              </div>
+                            )}
+                        </div>
+
+                        {/* Chat Input Area */}
+                        {result.transcript && (
+                          <div className="border-t border-slate-200 dark:border-slate-700/50 p-4">
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={result.chatInput}
+                                onChange={(e) => updateResultChatInput(result.id, e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !result.isStreaming)
+                                    handleChat(result.id, result.chatInput);
+                                }}
+                                placeholder="Ask about the transcript..."
+                                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/40"
+                                disabled={result.isStreaming}
+                              />
+                              <button
+                                onClick={() => handleChat(result.id, result.chatInput)}
+                                disabled={result.isStreaming || !result.chatInput.trim()}
+                                className="flex items-center justify-center rounded-xl bg-cyan-600 px-4 py-2.5 text-white transition-colors hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {result.isStreaming ? (
+                                  <Spinner className="h-4 w-4" />
+                                ) : (
+                                  <SendIcon />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
-
-                {messages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`flex ${
-                      msg.role === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <div
-                      className={`max-w-[85%] whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed ${
-                        msg.role === "user"
-                          ? "rounded-2xl rounded-br-md bg-cyan-600/20 text-cyan-100"
-                          : "rounded-2xl rounded-bl-md bg-slate-800 text-slate-200"
-                      }`}
-                    >
-                      {msg.content}
-                      {msg.role === "assistant" &&
-                        msg.content === "" &&
-                        isStreaming && (
-                          <span className="inline-block h-4 w-1 animate-pulse bg-cyan-400" />
-                        )}
-                    </div>
-                  </div>
-                ))}
-
-                {/* Streaming indicator when last message has content */}
-                {isStreaming &&
-                  messages.length > 0 &&
-                  messages[messages.length - 1].content !== "" &&
-                  messages[messages.length - 1].role === "assistant" && (
-                    <div className="flex justify-start">
-                      <span className="inline-block h-1 w-1 animate-pulse rounded-full bg-cyan-400" />
-                    </div>
-                  )}
-
-                <div ref={messagesEndRef} />
               </div>
-
-              {/* Chat Input Area */}
-              <div className="border-t border-slate-800 p-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !isStreaming)
-                        handleChat(chatInput);
-                    }}
-                    placeholder="Ask about the transcript..."
-                    className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/40"
-                    disabled={isStreaming}
-                  />
-                  <button
-                    onClick={() => handleChat(chatInput)}
-                    disabled={isStreaming || !chatInput.trim()}
-                    className="flex items-center justify-center rounded-xl bg-cyan-600 px-4 py-2.5 text-white transition-colors hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {isStreaming ? (
-                      <Spinner className="h-4 w-4" />
-                    ) : (
-                      <SendIcon />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         )}
       </div>
