@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4"/>
+      <stop offset="100%" style="stop-color:#0891b2"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:0.6"/>
+      <stop offset="50%" style="stop-color:#22d3ee;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:0.6"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect x="32" y="32" width="960" height="960" rx="216" ry="216" fill="url(#bg)"/>
+  <rect x="32" y="32" width="960" height="960" rx="216" ry="216" fill="none" stroke="#334155" stroke-width="4"/>
+
+  <!-- Sound wave bars (center) -->
+  <g transform="translate(512, 480)">
+    <!-- Left bars -->
+    <rect x="-240" y="-60" width="32" height="120" rx="16" fill="url(#wave)" opacity="0.5"/>
+    <rect x="-190" y="-100" width="32" height="200" rx="16" fill="url(#wave)" opacity="0.7"/>
+    <rect x="-140" y="-140" width="32" height="280" rx="16" fill="url(#wave)" opacity="0.85"/>
+    <rect x="-90" y="-180" width="32" height="360" rx="16" fill="url(#accent)"/>
+    <rect x="-40" y="-140" width="32" height="280" rx="16" fill="url(#accent)"/>
+    <!-- Center bar -->
+    <rect x="10" y="-200" width="32" height="400" rx="16" fill="#22d3ee"/>
+    <!-- Right bars -->
+    <rect x="60" y="-140" width="32" height="280" rx="16" fill="url(#accent)"/>
+    <rect x="110" y="-180" width="32" height="360" rx="16" fill="url(#accent)"/>
+    <rect x="160" y="-140" width="32" height="280" rx="16" fill="url(#wave)" opacity="0.85"/>
+    <rect x="210" y="-100" width="32" height="200" rx="16" fill="url(#wave)" opacity="0.7"/>
+    <rect x="260" y="-60" width="32" height="120" rx="16" fill="url(#wave)" opacity="0.5"/>
+  </g>
+
+  <!-- "T" letter badge -->
+  <circle cx="780" cy="760" r="120" fill="url(#accent)"/>
+  <text x="780" y="805" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="160" fill="#0f172a">T</text>
+</svg>
