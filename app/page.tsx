@@ -111,6 +111,54 @@ function SendIcon() {
   );
 }
 
+type Provider = "openai" | "claude" | "gemini";
+
+const PROVIDER_INFO: Record<Provider, { label: string; color: string }> = {
+  openai: { label: "OpenAI", color: "bg-emerald-500" },
+  claude: { label: "Claude", color: "bg-orange-500" },
+  gemini: { label: "Gemini", color: "bg-blue-500" },
+};
+
+function GearIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  );
+}
+
+function EyeIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
+function EyeSlashIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+    </svg>
+  );
+}
+
 function Spinner({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg
@@ -148,9 +196,44 @@ export default function Home() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const [provider, setProvider] = useState<Provider>("openai");
+  const [apiKey, setApiKey] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
+  const [showKey, setShowKey] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  // Load settings from localStorage
+  useEffect(() => {
+    const savedProvider = localStorage.getItem("transcriber_provider") as Provider | null;
+    const savedKey = localStorage.getItem("transcriber_apiKey");
+    if (savedProvider) setProvider(savedProvider);
+    if (savedKey) setApiKey(savedKey);
+  }, []);
+
+  // Close settings on click outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setShowSettings(false);
+      }
+    }
+    if (showSettings) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showSettings]);
+
+  function saveSettings() {
+    localStorage.setItem("transcriber_provider", provider);
+    localStorage.setItem("transcriber_apiKey", apiKey);
+    setSaved(true);
+    setTimeout(() => {
+      setSaved(false);
+      setShowSettings(false);
+    }, 800);
+  }
 
   // Auto-scroll chat messages
   useEffect(() => {
@@ -216,6 +299,8 @@ export default function Home() {
             content: m.content,
           })),
           transcript,
+          provider,
+          apiKey,
         }),
       });
 
@@ -308,7 +393,77 @@ export default function Home() {
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
-        <div className="py-12 text-center">
+        <div className="relative py-12 text-center">
+          {/* Settings Gear Button */}
+          <div className="absolute right-0 top-12" ref={settingsRef}>
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-slate-400 transition-all hover:border-cyan-600 hover:text-cyan-400"
+            >
+              <GearIcon />
+              <span className={`h-2 w-2 rounded-full ${PROVIDER_INFO[provider].color}`} />
+              <span className="text-xs">{PROVIDER_INFO[provider].label}</span>
+            </button>
+
+            {/* Settings Dropdown */}
+            {showSettings && (
+              <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-xl shadow-black/40">
+                <h3 className="mb-4 text-sm font-semibold text-white">AI Provider Settings</h3>
+
+                {/* Provider Selection */}
+                <div className="mb-4 flex gap-2">
+                  {(Object.keys(PROVIDER_INFO) as Provider[]).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setProvider(p)}
+                      className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                        provider === p
+                          ? "border border-cyan-500 bg-cyan-600/20 text-cyan-300"
+                          : "border border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-300"
+                      }`}
+                    >
+                      <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${PROVIDER_INFO[p].color}`} />
+                      {PROVIDER_INFO[p].label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* API Key Input */}
+                <label className="mb-1.5 block text-xs text-slate-400">
+                  {PROVIDER_INFO[provider].label} API Key
+                </label>
+                <div className="relative mb-4">
+                  <input
+                    type={showKey ? "text" : "password"}
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder={`Enter your ${PROVIDER_INFO[provider].label} API key...`}
+                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 pr-10 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/40"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKey(!showKey)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  >
+                    {showKey ? <EyeSlashIcon /> : <EyeIcon />}
+                  </button>
+                </div>
+
+                {/* Save Button */}
+                <button
+                  onClick={saveSettings}
+                  className={`w-full rounded-lg py-2 text-sm font-semibold transition-all ${
+                    saved
+                      ? "bg-emerald-600 text-white"
+                      : "bg-cyan-600 text-white hover:bg-cyan-500"
+                  }`}
+                >
+                  {saved ? "Saved!" : "Save"}
+                </button>
+              </div>
+            )}
+          </div>
+
           <h1 className="text-4xl font-bold tracking-tight text-white">
             Transcriber
           </h1>
@@ -433,6 +588,9 @@ export default function Home() {
                   <h2 className="text-lg font-semibold text-white">
                     AI Assistant
                   </h2>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium text-white ${PROVIDER_INFO[provider].color}`}>
+                    {PROVIDER_INFO[provider].label}
+                  </span>
                 </div>
 
                 {/* Preset Buttons */}
